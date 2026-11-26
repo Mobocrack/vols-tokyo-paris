@@ -27,6 +27,11 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--text);-
 :focus-visible{outline:2px solid var(--yellow);outline-offset:3px;border-radius:6px}
 .sign{background:var(--sign);color:var(--sign-ink);padding-top:env(safe-area-inset-top,0px)}
 .sign .wrap{padding-block:30px 32px}
+.top{display:flex;justify-content:flex-end;gap:18px;margin-bottom:14px;font-size:14px}
+.top a,.top button{color:var(--sign-muted);text-decoration:none;background:none;border:0;font:inherit;cursor:pointer;padding:0}
+.top a{color:var(--yellow);font-weight:600}
+.top button:hover{color:var(--sign-ink)}
+[hidden]{display:none!important}
 .eyebrow{font:600 12px/1 var(--text);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow)}
 h1{font:700 clamp(48px,10vw,80px)/.95 var(--display);margin:10px 0 0;letter-spacing:.01em}
 .sign p{color:var(--sign-muted);margin:10px 0 0;max-width:55ch}
@@ -56,6 +61,7 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
 <body>
 <header class="sign">
   <div class="wrap">
+    <nav class="top" id="top" hidden><a href="gerer/">Gérer les voyages</a><button type="button" id="logout">Se déconnecter</button></nav>
     <div class="eyebrow">Départs suivis</div>
     <h1>Mes vols</h1>
     <p>Les prix de chaque voyage sont relevés automatiquement tous les jours. Touchez un voyage pour voir tous les vols.</p>
@@ -63,7 +69,7 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
 </header>
 <main><div class="wrap" id="list"></div></main>
 <script>
-const DATA = {"projets": [{"id": "japon-retour-2027", "nom": "Retour du Japon", "actif": true, "type": "aller", "origine": {"code": "TYO", "nom": "Tokyo", "aeroports": "HND,NRT"}, "destination": {"code": "PAR", "nom": "Paris", "aeroports": "CDG,ORY"}, "resume": "Aller simple · 28 janv. 2027 (± 1 j) · 1 adulte · économique · 21 h max", "date_aller": "2027-01-28", "date_retour": "", "duree_max_h": 21, "passagers": 1, "passagers_txt": "1 adulte", "meilleur": {"prix": 477, "prix_total": 477, "compagnie": "Air China", "date": "2027-01-27", "duree": 1030, "escales": 1, "via": "PEK"}, "releve": "25/11/2026 10:41 (PC)", "nb_ok": 94}]};
+const DATA = {"projets": [{"id": "japon-retour-2027", "nom": "Retour du Japon", "actif": true, "type": "aller", "origine": {"code": "TYO", "nom": "Tokyo", "aeroports": "HND,NRT"}, "destination": {"code": "PAR", "nom": "Paris", "aeroports": "CDG,ORY"}, "resume": "Aller simple · 28 janv. 2027 (± 1 j) · 1 adulte · économique · 21 h max", "date_aller": "2027-01-28", "date_retour": "", "duree_max_h": 21, "passagers": 1, "passagers_txt": "1 adulte", "meilleur": {"prix": 500, "prix_total": 500, "compagnie": "Air China", "date": "2027-01-28", "duree": 1080, "escales": 1, "via": "PEK"}, "releve": "26/11/2026 09:01 (PC)", "nb_ok": 94}], "gestion": false};
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const eur = n => Math.round(n).toLocaleString("fr-FR") + " €";
 const dur = m => `${Math.floor(m/60)} h ${String(m%60).padStart(2,"0")}`;
@@ -83,6 +89,13 @@ function carte(p){
     <div class="price">${prix}</div>
     <div class="meta">${detail ? `<span>${detail}</span>` : ""}${p.releve ? `<span>Relevé du ${esc(p.releve.replace(/\s*\(.*\)$/, ""))}</span>` : ""}${p.actif ? "" : "<span>Archivé : plus relevé</span>"}</div>
   </a>`;
+}
+if (DATA.gestion) {
+  document.getElementById("top").hidden = false;
+  document.getElementById("logout").onclick = () => {
+    try { localStorage.removeItem("vols.cles"); sessionStorage.removeItem("vols.cles"); } catch (e) {}
+    location.reload();
+  };
 }
 const actifs = DATA.projets.filter(p => p.actif), archives = DATA.projets.filter(p => !p.actif);
 document.getElementById("list").innerHTML =
